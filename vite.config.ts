@@ -96,7 +96,19 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
     },
 
     // The vite plugin used by the project. The quantity is large, so it is separately extracted and managed
-    plugins: createVitePlugins(viteEnv, isBuild),
+    plugins: [
+      ...createVitePlugins(viteEnv, isBuild),
+      {
+        name: 'singleHMR',
+        handleHotUpdate({ modules, file }) {
+          if (file.match(/xml$/)) return [];
+          modules.map((m) => {
+            m.importedModules = new Set();
+            m.importers = new Set();
+          });
+        },
+      },
+    ],
 
     optimizeDeps: {
       // @iconify/iconify: The dependency is dynamically and virtually loaded by @purge-icons/generated, so it needs to be specified explicitly

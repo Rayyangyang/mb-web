@@ -11,7 +11,7 @@ const about: AppRouteModule = {
     hideChildrenInMenu: true,
     icon: 'simple-icons:about-dot-me',
     title: '首页',
-    orderNo: 100000,
+    orderNo: 10,
   },
   children: [
     {

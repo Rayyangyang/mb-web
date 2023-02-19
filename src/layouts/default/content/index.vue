@@ -1,7 +1,6 @@
 <template>
   <div :class="[prefixCls, getLayoutContentMode]" v-loading="getOpenPageLoading && getPageLoading">
     <LayoutBreadcrumb :theme="getHeaderTheme" />
-
     <PageLayout />
   </div>
 </template>

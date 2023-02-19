@@ -16,7 +16,11 @@
         :theme="getHeaderTheme"
         :sider="false"
       /> -->
-      <p v-if="getShowContent && getShowBread" style="color: red">123</p>
+      <p
+        v-if="getShowContent && getShowBread"
+        style="color: #5dbbff; font-size: 20px; margin: 0 0 0 20px; font-weight: bold"
+        >慢病综合管理系统</p
+      >
     </div>
     <!-- left end -->
 

@@ -10,7 +10,7 @@ const about: AppRouteModule = {
   meta: {
     icon: 'simple-icons:about-dot-me',
     title: '服务包管理',
-    orderNo: 90,
+    orderNo: 14,
   },
   children: [
     {

@@ -1,0 +1,20 @@
+.my-container{
+  margin: 20px;
+  height: calc(100vh - 110px);
+}
+.fb{
+  font-weight: bold;
+}
+
+.my-title{
+  display: flex;
+  align-items: center ;
+  margin-bottom: 20px;
+  i{
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background-color: #29A5FF;
+    margin-right: 7px;
+  }
+}

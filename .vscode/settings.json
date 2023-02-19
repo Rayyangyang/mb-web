@@ -83,15 +83,15 @@
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "[vue]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-      "source.fixAll.stylelint": true
-    }
-  },
+  // "editor.codeActionsOnSave": {
+  //   "source.fixAll.eslint": true
+  // },
+  // "[vue]": {
+  //   "editor.codeActionsOnSave": {
+  //     "source.fixAll.eslint": true,
+  //     "source.fixAll.stylelint": true
+  //   }
+  // },
   "i18n-ally.localesPaths": ["src/locales/lang"],
   "i18n-ally.keystyle": "nested",
   "i18n-ally.sortKeys": true,
