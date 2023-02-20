@@ -2,12 +2,13 @@ import type { AppRouteModule } from '/@/router/types';
 
 import { LAYOUT } from '/@/router/constant';
 
-const about: AppRouteModule = {
+const ActivationManage: AppRouteModule = {
   path: '/activationManage',
   name: 'ActivationManage',
   component: LAYOUT,
   redirect: '/activationManage/index',
   meta: {
+    hideChildrenInMenu: true,
     icon: 'simple-icons:about-dot-me',
     title: '激活管理',
     orderNo: 15,
@@ -26,4 +27,4 @@ const about: AppRouteModule = {
   ],
 };
 
-export default about;
+export default ActivationManage;

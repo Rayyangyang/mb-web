@@ -25,22 +25,12 @@
       />
     </FormItem>
 
-    <ARow class="enter-x">
-      <ACol :span="12">
-        <FormItem>
-          <!-- No logic, you need to deal with it yourself -->
-          <Checkbox v-model:checked="rememberMe" size="small">
-            {{ t('sys.login.rememberMe') }}
-          </Checkbox>
-        </FormItem>
-      </ACol>
-      <ACol :span="12">
-        <FormItem :style="{ 'text-align': 'right' }">
-          <!-- No logic, you need to deal with it yourself -->
-          <Button type="link" size="small" @click="setLoginState(LoginStateEnum.RESET_PASSWORD)">
-            {{ t('sys.login.forgetPassword') }}
-          </Button>
-        </FormItem>
+    <ARow class="enter-x mb-10">
+      <ACol>
+        <RadioGroup v-model:value="userRole">
+          <Radio value="admin">管理员</Radio>
+          <Radio value="doc">医生</Radio>
+        </RadioGroup>
       </ACol>
     </ARow>
 
@@ -57,7 +47,7 @@
 <script lang="ts" setup>
   import { reactive, ref, unref, computed } from 'vue';
 
-  import { Checkbox, Form, Input, Row, Col, Button } from 'ant-design-vue';
+  import { Checkbox, Form, Input, Row, Col, Button, Radio } from 'ant-design-vue';
   import LoginFormTitle from './LoginFormTitle.vue';
 
   import { useI18n } from '/@/hooks/web/useI18n';
@@ -68,6 +58,7 @@
   import { useDesign } from '/@/hooks/web/useDesign';
   //import { onKeyStroke } from '@vueuse/core';
 
+  const RadioGroup = Radio.Group;
   const ACol = Col;
   const ARow = Row;
   const FormItem = Form.Item;
@@ -84,6 +75,8 @@
   const loading = ref(false);
   const rememberMe = ref(false);
 
+  let userRole: any = ref('admin');
+
   const formData = reactive({
     account: '',
     password: '',
@@ -96,21 +89,21 @@
   const getShow = computed(() => unref(getLoginState) === LoginStateEnum.LOGIN);
 
   async function handleLogin() {
+    userStore.setRoleList([userRole.value]);
     const data = await validForm();
-    console.log(123, data);
     if (!data) return;
     try {
       loading.value = true;
-      console.log(333334);
       const userInfo = await userStore.login({
         password: data.password,
         username: data.account,
         mode: 'none', //不要默认的错误提示
       });
-      console.log(3333);
+
+      // 存用户的登录角色
+      // localStorage.setItem('userRole', userRole.value);
       if (userInfo) {
         // console.log('userInfo', userInfo);
-
         notification.success({
           message: t('sys.login.loginSuccessTitle'),
           description: `${t('sys.login.loginSuccessDesc')}: ${userInfo.profile.nickName}`,

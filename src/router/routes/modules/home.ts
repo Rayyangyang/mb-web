@@ -2,7 +2,7 @@ import type { AppRouteModule } from '/@/router/types';
 
 import { LAYOUT } from '/@/router/constant';
 
-const about: AppRouteModule = {
+const Home: AppRouteModule = {
   path: '/home',
   name: 'Home',
   component: LAYOUT,
@@ -27,4 +27,4 @@ const about: AppRouteModule = {
   ],
 };
 
-export default about;
+export default Home;

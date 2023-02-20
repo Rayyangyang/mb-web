@@ -118,6 +118,7 @@ export const usePermissionStore = defineStore({
 
       let routes: AppRouteRecordRaw[] = [];
       const roleList = toRaw(userStore.getRoleList) || [];
+      console.log(2222, roleList)
       //    console.log('=buildRoutesAction roleList=', roleList);
       //    console.log('=buildRoutesAction routes=', routes);
 
@@ -180,16 +181,16 @@ export const usePermissionStore = defineStore({
       switch (permissionMode) {
         // 角色权限
         case PermissionModeEnum.ROLE:
-        //   // 对非一级路由进行过滤
-        //   routes = filter(asyncRoutes, routeFilter);
-        //   // 对一级路由根据角色权限过滤
-        //   routes = routes.filter(routeFilter);
-        //   // Convert multi-level routing to level 2 routing
-        //   // 将多级路由转换为 2 级路由
-        //   routes = flatMultiLevelRoutes(routes);
-        //   console.log('==PermissionModeEnum.ROLE routes=', routes);
+          // 对非一级路由进行过滤
+          routes = filter(asyncRoutes, routeFilter);
+          // 对一级路由根据角色权限过滤
+          routes = routes.filter(routeFilter);
+          // Convert multi-level routing to level 2 routing
+          // 将多级路由转换为 2 级路由
+          routes = flatMultiLevelRoutes(routes);
+          console.log('==PermissionModeEnum.ROLE routes=', routes);
 
-        //   break;
+          break;
 
         // 路由映射， 默认进入该case
         case PermissionModeEnum.ROUTE_MAPPING:
@@ -259,6 +260,8 @@ export const usePermissionStore = defineStore({
 
       routes.push(ERROR_LOG_ROUTE);
       patchHomeAffix(routes);
+
+      console.log(123, routes)
       return routes;
     },
   },

@@ -2,12 +2,13 @@ import type { AppRouteModule } from '/@/router/types';
 
 import { LAYOUT } from '/@/router/constant';
 
-const about: AppRouteModule = {
+const ArchivesManage: AppRouteModule = {
   path: '/archivesManage',
   name: 'ArchivesManage',
   component: LAYOUT,
   redirect: '/archivesManage/index',
   meta: {
+    hideChildrenInMenu: true,
     icon: 'simple-icons:about-dot-me',
     title: '档案管理',
     orderNo: 12,
@@ -26,4 +27,4 @@ const about: AppRouteModule = {
   ],
 };
 
-export default about;
+export default ArchivesManage;

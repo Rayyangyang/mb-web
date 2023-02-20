@@ -2,12 +2,13 @@ import type { AppRouteModule } from '/@/router/types';
 
 import { LAYOUT } from '/@/router/constant';
 
-const about: AppRouteModule = {
+const ServicePackageManage: AppRouteModule = {
   path: '/servicePackageManage',
   name: 'ServicePackageManage',
   component: LAYOUT,
   redirect: '/servicePackageManage/index',
   meta: {
+    hideChildrenInMenu: true,
     icon: 'simple-icons:about-dot-me',
     title: '服务包管理',
     orderNo: 14,
@@ -26,4 +27,4 @@ const about: AppRouteModule = {
   ],
 };
 
-export default about;
+export default ServicePackageManage;

@@ -65,6 +65,7 @@ export const useUserStore = defineStore({
       setAuthCache(TOKEN_KEY, info);
     },
     setRoleList(roleList: RoleEnum[]) {
+      console.log(9999)
       this.roleList = roleList;
       setAuthCache(ROLES_KEY, roleList);
     },
@@ -98,7 +99,7 @@ export const useUserStore = defineStore({
           {
             ...loginParams,
             password: md5(loginParams.password),
-            type: 'admin',
+            // type: 'admin',
           },
           mode,
         );
@@ -143,6 +144,7 @@ export const useUserStore = defineStore({
       // const userInfo = await getUserInfo(); TODO
 
       let userInfo = {};
+      console.log(123009, data)
       if (data) {
         userInfo = data.data;
       } else {
@@ -157,17 +159,16 @@ export const useUserStore = defineStore({
       //   userInfo.roles = [];
       //   this.setRoleList([]);
       // }
-      const {
-        roles: { admin = {} },
-      } = userInfo;
+      // const {
+      //   roles: { admin = {} },
+      // } = userInfo;
       // save role
       // console.log('=roleArr admin=', admin);
-      const roleArr = [];
+      // const roleArr = ['doc'];
       // console.log('=roleArr=', roleArr);
-      this.setRoleList(roleArr);
+      // this.setRoleList(roleArr);
 
       this.setUserInfo(userInfo);
-      console.log(123, userInfo);
       return userInfo;
     },
     /**

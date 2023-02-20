@@ -2,12 +2,13 @@ import type { AppRouteModule } from '/@/router/types';
 
 import { LAYOUT } from '/@/router/constant';
 
-const about: AppRouteModule = {
+const TagManage: AppRouteModule = {
   path: '/tagManage',
   name: 'TagManage',
   component: LAYOUT,
   redirect: '/tagManage/index',
   meta: {
+    hideChildrenInMenu: true,
     icon: 'simple-icons:about-dot-me',
     title: '标签管理',
     orderNo: 16,
@@ -26,4 +27,4 @@ const about: AppRouteModule = {
   ],
 };
 
-export default about;
+export default TagManage;
