@@ -7,13 +7,13 @@
       </div>
       <div class="user-list-wrapper">
         <Tree :tree-data="treeData" :field-names="fieldNames">
-          <template #title="{ name, key }">
+          <template #title="{ name, id }">
             <div class="tree-item">
               <span>{{ name }}</span>
               <div class="control-wrapper">
                 <div style="display: flex; align-items: center">
                   <div class="mr-2">
-                    <img src="../../assets/icons/add.png" alt="" @click="secVisible = true" />
+                    <img src="../../assets/icons/add.png" alt="" @click="addSecOrg(name, id)" />
                   </div>
                   <div class="mr-2">
                     <img src="../../assets/icons/edit.png" alt="" @click="edit" />
@@ -32,13 +32,13 @@
       <div class="table-handle-wrapper">
         <div class="search-wrapper">
           <div class="mr-2">
-            <Input v-model:value="userName" placeholder="请输入成员姓名" size="small" />
+            <Input v-model:value="userName" placeholder="请输入成员姓名" size="middle" />
           </div>
           <div class="mr-2">
-            <Input v-model:value="userName" placeholder="请输入成员联系电话" size="small" />
+            <Input v-model:value="userName" placeholder="请输入成员联系电话" size="middle" />
           </div>
 
-          <Button style="border-radius: 4px; padding: 0px 16px" type="primary" size="small"
+          <Button style="border-radius: 4px; padding: 0px 16px" type="primary" size="middle"
             >查询</Button
           >
         </div>
@@ -47,7 +47,7 @@
             @click="addNewUser"
             style="border-radius: 4px; padding: 0px 16px"
             type="primary"
-            size="small"
+            size="middle"
             >新增</Button
           >
         </div>
@@ -79,7 +79,7 @@
       </div>
       <template #footer>
         <Button key="back" @click="visible = false" style="border-radius: 8px">取消</Button>
-        <Button key="submit" type="primary" @click="handleOk" style="border-radius: 8px"
+        <Button key="submit" type="primary" @click="handleSaveFirTree" style="border-radius: 8px"
           >保存</Button
         >
       </template>
@@ -90,7 +90,7 @@
       <div>
         <p style="padding: 20px 20px 0px">
           <span class="mr-4"> 一级机构名称： </span>
-          1233333
+          {{ firOrgNameStatic }}
         </p>
         <div class="edit-user-wrapper">
           <span class="mr-4">
@@ -98,14 +98,14 @@
             二级机构名称:
           </span>
           <div style="width: 70%">
-            <Input v-model:value="firOrgName" placeholder="请输入机构名称" />
+            <Input v-model:value="secOrgName" placeholder="请输入机构名称" />
           </div>
         </div>
       </div>
 
       <template #footer>
         <Button key="back" @click="secVisible = false" style="border-radius: 8px">取消</Button>
-        <Button key="submit" type="primary" @click="handleOk" style="border-radius: 8px"
+        <Button key="submit" type="primary" @click="saveSecOrg" style="border-radius: 8px"
           >保存</Button
         >
       </template>
@@ -200,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, reactive } from 'vue';
+  import { ref, watch, reactive, onMounted } from 'vue';
   import {
     Checkbox,
     Button,
@@ -214,33 +214,96 @@
     Upload,
   } from 'ant-design-vue';
 
+  import { getUserListTreeApi, uploadUserListTreeApi } from '/@/api/userMag/user.ts';
+
+  import { v4 as uuidv4 } from 'uuid';
+
+  onMounted(() => {
+    getUserList();
+  });
+
+  const treeData = ref([]);
+
+  const getUserList = async () => {
+    let res = await getUserListTreeApi();
+    console.log(111, res);
+    treeData.value = res.data.children;
+  };
+
+  // 保存一级机构
+  const handleSaveFirTree = async () => {
+    let uploadData = [
+      {
+        name: firOrgName.value,
+        children: [],
+        meta: {},
+        id: uuidv4(),
+      },
+      ...treeData.value,
+    ];
+
+    await uploadUserListTreeApi({
+      id: 'root',
+      meta: {},
+      name: '慢病管理系统',
+      children: uploadData,
+    });
+
+    // 刷新列表
+    await getUserList();
+
+    visible.value = false;
+  };
+
+  // 添加二级机构
+  let firOrgNameStatic = ref('');
+  let curEditTreeId = ref('');
+  let secOrgName = ref('');
+  const addSecOrg = (val, id) => {
+    curEditTreeId.value = id;
+    secVisible.value = true;
+    firOrgNameStatic.value = val;
+  };
+
+  const saveSecOrg = async () => {
+    let uploadData = {
+      id: uuidv4(),
+      meta: {},
+      children: [],
+      name: secOrgName.value
+    };
+
+    readNodes(treeData.value, curEditTreeId.value, uploadData);
+
+    console.log(123, treeData.value)
+
+    await uploadUserListTreeApi({
+      id: 'root',
+      meta: {},
+      name: '慢病管理系统',
+      children: treeData.value,
+    });
+  };
+
+  function readNodes(nodes, id, addChild) {
+    for (let item of nodes) {
+      if (id == item.id) {
+        item.children.push(addChild);
+        return;
+      }
+
+      if (item.children && item.children.length) {
+        readNodes(item.children, id, addChild);
+      }
+    }
+  }
+
   const CheckboxGroup = Checkbox.Group;
   const FormItem = Form.Item;
   const fieldNames = {
-    children: 'child',
+    children: 'children',
     title: 'name',
   };
-  const treeData = [
-    {
-      name: 'parent 1',
-      key: '0-0',
-      child: [
-        {
-          name: '张晨成',
-          key: '0-0-0',
-          child: [
-            { name: 'leaf', key: '0-0-0-0' },
-            { name: 'leaf', key: '0-0-0-1' },
-          ],
-        },
-        {
-          name: 'parent 1-1',
-          key: '0-0-1',
-          child: [{ key: '0-0-1-0', name: 'zcvc' }],
-        },
-      ],
-    },
-  ];
 
   const columns = [
     {

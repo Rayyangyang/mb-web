@@ -1,5 +1,5 @@
 import type { AppRouteModule } from '/@/router/types';
-
+import { RoleEnum } from '/@/enums/roleEnum';
 import { LAYOUT } from '/@/router/constant';
 
 const UserManage: AppRouteModule = {
@@ -11,6 +11,7 @@ const UserManage: AppRouteModule = {
     icon: 'simple-icons:about-dot-me',
     title: '人员管理',
     orderNo: 11,
+    roles: [RoleEnum.ADMIN],
   },
   children: [
     {
