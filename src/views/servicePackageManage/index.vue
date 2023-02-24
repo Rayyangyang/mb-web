@@ -19,7 +19,7 @@
         >
       </div>
     </div>
-    <Table :columns="columns" :data-source="data">
+    <Table :columns="columns" :data-source="tableData">
       <template #bodyCell="{ column, text }">
         <template v-if="column.key === 'openStatus'">
           <div>
@@ -178,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, reactive } from 'vue';
+  import { ref, watch, reactive, onMounted } from 'vue';
   import {
     Button,
     Modal,
@@ -191,48 +191,61 @@
     Upload,
   } from 'ant-design-vue';
 
+  import { getServiceListApi } from '/@/api/servicePackage/servicePackage';
+
+  onMounted(async () => {
+    await getServiceList();
+  });
+
+  const getServiceList = async () => {
+    let res = await getServiceListApi();
+    console.log(res);
+    tableData.value = res.data.map((ele, i) => {
+      return {
+        order: i + 1,
+        ...ele,
+        doctor: ele.meta.leader.name,
+      };
+    });
+    console.log(123, res);
+  };
+
   const DescriptionsItem = Descriptions.Item;
   const FormItem = Form.Item;
+
+  const tableData = ref([]);
   const columns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: '序号',
+      dataIndex: 'order',
+      key: 'order',
     },
     {
-      title: 'Age',
-      dataIndex: 'age',
-      key: 'age',
+      title: '服务包名称',
+      dataIndex: 'name',
+      key: 'name',
       width: 80,
     },
     {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address 1',
-      ellipsis: true,
+      title: '服务包价格（元）',
+      dataIndex: 'price',
+      key: 'price',
     },
     {
-      title: 'Long Column Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 2',
-      ellipsis: true,
+      title: '主管医生',
+      dataIndex: 'doctor',
+      key: 'doctor',
     },
     {
-      title: 'Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 3',
-      ellipsis: true,
-    },
-    {
-      title: 'Long Column',
-      dataIndex: 'address',
-      key: 'address 4',
+      title: '签约年限',
+      dataIndex: 'serve_length',
+      key: 'serve_length',
       ellipsis: true,
     },
     {
       title: '启用/禁用',
-      dataIndex: 'address',
-      key: 'openStatus',
+      dataIndex: 'enabled',
+      key: 'enabled',
       ellipsis: true,
     },
     {

@@ -11,10 +11,10 @@
           <div class="control-wrapper">
             <div style="display: flex; align-items: center">
               <div>
-                <img src="../../assets/icons/edit.png" alt="" @click="edit" />
+                <img src="../../assets/icons/edit.png" alt="" @click="edit(ele.id)" />
               </div>
               <div>
-                <img src="../../assets/icons/del.png" alt="" @click="del" />
+                <img src="../../assets/icons/del.png" alt="" @click="del(ele.id)" />
               </div>
             </div>
           </div>
@@ -66,22 +66,28 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, reactive } from 'vue';
+  import { ref, watch, reactive, onMounted } from 'vue';
   import { Checkbox, Button, Modal, Input, message } from 'ant-design-vue';
+  import { getRolesListApi, addNewRoleApi, updateRoleApi, delRoleApi } from '/@/api/userMag/roles';
+
+  onMounted(async () => {
+    await getRoleList();
+  });
+
+  const getRoleList = async () => {
+    roleList.value = (await getRolesListApi()).data.map((ele) => {
+      return {
+        id: ele.id,
+        title: ele.name,
+        role: ele?.meta.permissions,
+      };
+    });
+  };
+
+  const roleList = ref([]);
 
   const CheckboxGroup = Checkbox.Group;
 
-  const roleList = ref([
-    {
-      title: '角色名称1',
-    },
-    {
-      title: '角色名称1',
-    },
-    {
-      title: '角色名称1',
-    },
-  ]);
   const plainOptions = ['Apple', 'Pear', 'Orange'];
   const state = reactive({
     indeterminate: true,
@@ -111,21 +117,45 @@
     visible.value = true;
     isAdd.value = true;
   };
+  const curEditRoleId = ref('');
   // 修改
-  const edit = () => {
+  const edit = (val) => {
     visible.value = true;
     isAdd.value = false;
+    curEditRoleId.value = val;
   };
 
-  const handleOk = () => {
+  const handleOk = async () => {
     if (roleName.value.length == 0) {
       message.error('角色名称必填');
       return;
     }
+
+    let subData = {
+      name: roleName.value,
+      meta: {
+        permissions: [],
+      },
+    };
+
+    // 新增
+    if (isAdd.value) {
+      await addNewRoleApi(subData);
+      message.success('新增成功');
+    } else {
+      await updateRoleApi(subData, curEditRoleId.value);
+      message.success('修改成功');
+    }
+
+    await getRoleList();
     visible.value = false;
   };
 
-  const del = () => {};
+  const del = async (id) => {
+    await delRoleApi(id);
+    await getRoleList();
+    message.success('删除成功');
+  };
 </script>
 
 <style scoped lang="scss">

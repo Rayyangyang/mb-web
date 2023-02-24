@@ -6,20 +6,25 @@
         <p @click="addNew"> + 新增角色 </p>
       </div>
       <div class="user-list-wrapper">
-        <Tree :tree-data="treeData" :field-names="fieldNames">
-          <template #title="{ name, id }">
+        <Tree :tree-data="treeData" :field-names="fieldNames" @select="selectTree">
+          <template #title="{ name, id, level }">
             <div class="tree-item">
               <span>{{ name }}</span>
               <div class="control-wrapper">
                 <div style="display: flex; align-items: center">
                   <div class="mr-2">
-                    <img src="../../assets/icons/add.png" alt="" @click="addSecOrg(name, id)" />
+                    <img
+                      src="../../assets/icons/add.png"
+                      alt=""
+                      @click="addSecOrg(name, id)"
+                      v-show="level == 0"
+                    />
                   </div>
                   <div class="mr-2">
-                    <img src="../../assets/icons/edit.png" alt="" @click="edit" />
+                    <img src="../../assets/icons/edit.png" alt="" @click="edit(name, id, level)" />
                   </div>
                   <div>
-                    <img src="../../assets/icons/del.png" alt="" @click="del" />
+                    <img src="../../assets/icons/del.png" alt="" @click="del(id)" />
                   </div>
                 </div>
               </div>
@@ -52,7 +57,7 @@
           >
         </div>
       </div>
-      <Table :columns="columns" :data-source="data">
+      <Table :columns="columns" :data-source="tableData">
         <template #bodyCell="{ column, text }">
           <template v-if="column.key === 'action'">
             <div>
@@ -112,7 +117,6 @@
     </Modal>
 
     <!-- 新增成员 -->
-    <!-- 一级机构 -->
     <Modal v-model:visible="userVisible" title="新增/修改/查看成员信息" width="600px">
       <div class="edit-userinfo-wrapper">
         <Form
@@ -126,17 +130,17 @@
         >
           <FormItem
             label="姓名"
-            name="username"
+            name="name"
             :rules="[{ required: true, message: 'Please input your username!' }]"
           >
-            <Input v-model:value="formState.username" />
+            <Input v-model:value="formState.name" />
           </FormItem>
           <FormItem
             label="手机号"
-            name="username"
+            name="phone"
             :rules="[{ required: true, message: 'Please input your username!' }]"
           >
-            <Input v-model:value="formState.username" />
+            <Input v-model:value="formState.phone" />
             <p style="color: #b1b1b1">默认密码： 123456</p>
           </FormItem>
           <FormItem
@@ -144,26 +148,27 @@
             name="username"
             :rules="[{ required: true, message: 'Please input your username!' }]"
           >
-            <Input v-model:value="formState.username" />
+            <Input v-model:value="formState.idCard" />
           </FormItem>
           <FormItem
             label="职务"
             name="username"
             :rules="[{ required: true, message: 'Please input your username!' }]"
           >
-            <Input v-model:value="formState.username" />
+            <Input v-model:value="formState.job" />
           </FormItem>
-          <FormItem
-            label="角色"
-            name="username"
-            :rules="[{ required: true, message: 'Please input your username!' }]"
-          >
-            <Input v-model:value="formState.username" />
+          <FormItem label="角色" name="role">
+            <Select
+              v-model:value="formState.role"
+              style="width: 100%"
+              :options="roleList"
+              placeholder="请选择角色"
+            />
           </FormItem>
         </Form>
         <div class="remark-wrapper">
           <span>备注:</span>
-          <Textarea v-model:value="formState.username" :auto-size="{ minRows: 2, maxRows: 5 }" />
+          <Textarea v-model:value="formState.remark" :auto-size="{ minRows: 2, maxRows: 5 }" />
         </div>
         <!-- 上传 -->
         <div class="upload-wrapper">
@@ -212,45 +217,100 @@
     Form,
     Textarea,
     Upload,
+    Select,
   } from 'ant-design-vue';
+  import md5 from 'md5';
 
-  import { getUserListTreeApi, uploadUserListTreeApi } from '/@/api/userMag/user.ts';
+  import {
+    getUserListTreeApi,
+    uploadUserListTreeApi,
+    getUserListApi,
+    createUserApi,
+  } from '/@/api/userMag/user';
+  import { getRolesListApi } from '/@/api/userMag/roles';
 
   import { v4 as uuidv4 } from 'uuid';
 
-  onMounted(() => {
-    getUserList();
+  onMounted(async () => {
+    await getUserTreeList();
+    await getUserList('root');
+
+    roleList.value = (await getRolesListApi()).data.map((ele) => {
+      return {
+        value: ele.id,
+        label: ele.name,
+      };
+    });
   });
+
+  const roleList = ref([]);
+  let curSelectRole = ref('');
+  const tableData = ref([]);
+  const getUserList = async (id) => {
+    let res = await getUserListApi(id);
+    console.log(123, res);
+    tableData.value = res.data.map((ele, i) => {
+      return {
+        ...ele.profile,
+        ...ele,
+        order: i + 1,
+      };
+    });
+  };
 
   const treeData = ref([]);
 
-  const getUserList = async () => {
+  const getUserTreeList = async () => {
     let res = await getUserListTreeApi();
     console.log(111, res);
     treeData.value = res.data.children;
+    arrayFlagLevel(treeData.value, 0);
   };
+
+  // 处理树形结构
+  function arrayFlagLevel(array, level) {
+    if (!array || !array.length) return;
+    array.forEach((item) => {
+      item.level = level;
+      if (item.children && item.children.length) {
+        arrayFlagLevel(item.children, level + 1);
+      }
+    });
+  }
 
   // 保存一级机构
   const handleSaveFirTree = async () => {
-    let uploadData = [
-      {
-        name: firOrgName.value,
-        children: [],
-        meta: {},
-        id: uuidv4(),
-      },
-      ...treeData.value,
-    ];
+    // 新增
+    if (isAdd.value) {
+      let uploadData = [
+        {
+          name: firOrgName.value,
+          children: [],
+          meta: {},
+          id: uuidv4(),
+        },
+        ...treeData.value,
+      ];
 
-    await uploadUserListTreeApi({
-      id: 'root',
-      meta: {},
-      name: '慢病管理系统',
-      children: uploadData,
-    });
+      await uploadUserListTreeApi({
+        id: 'root',
+        meta: {},
+        name: '慢病管理系统',
+        children: uploadData,
+      });
+    } else {
+      // 编辑
+      changeTreeName(treeData.value, curEditTreeId.value, firOrgName.value);
+      await uploadUserListTreeApi({
+        id: 'root',
+        meta: {},
+        name: '慢病管理系统',
+        children: treeData.value,
+      });
+    }
 
     // 刷新列表
-    await getUserList();
+    await getUserTreeList();
 
     visible.value = false;
   };
@@ -260,29 +320,44 @@
   let curEditTreeId = ref('');
   let secOrgName = ref('');
   const addSecOrg = (val, id) => {
+    isAdd.value = true;
     curEditTreeId.value = id;
     secVisible.value = true;
     firOrgNameStatic.value = val;
   };
 
   const saveSecOrg = async () => {
-    let uploadData = {
-      id: uuidv4(),
-      meta: {},
-      children: [],
-      name: secOrgName.value
-    };
+    // 新增
+    if (isAdd.value) {
+      let uploadData = {
+        id: uuidv4(),
+        meta: {},
+        children: [],
+        name: secOrgName.value,
+      };
 
-    readNodes(treeData.value, curEditTreeId.value, uploadData);
+      readNodes(treeData.value, curEditTreeId.value, uploadData);
 
-    console.log(123, treeData.value)
+      await uploadUserListTreeApi({
+        id: 'root',
+        meta: {},
+        name: '慢病管理系统',
+        children: treeData.value,
+      });
+    } else {
+      // 编辑
+      changeTreeName(treeData.value, curEditTreeId.value, secOrgName.value);
 
-    await uploadUserListTreeApi({
-      id: 'root',
-      meta: {},
-      name: '慢病管理系统',
-      children: treeData.value,
-    });
+      await uploadUserListTreeApi({
+        id: 'root',
+        meta: {},
+        name: '慢病管理系统',
+        children: treeData.value,
+      });
+    }
+
+    secVisible.value = false;
+    await getUserTreeList();
   };
 
   function readNodes(nodes, id, addChild) {
@@ -307,41 +382,34 @@
 
   const columns = [
     {
-      title: 'Name',
+      title: '序号',
+      dataIndex: 'order',
+      key: 'order',
+    },
+    {
+      title: '成员姓名',
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Age',
-      dataIndex: 'age',
-      key: 'age',
-      width: 80,
+      title: '身份证号',
+      dataIndex: 'idCard',
+      key: 'idCard',
     },
     {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address 1',
+      title: '联系方式',
+      dataIndex: 'phone',
+      key: 'phone',
       ellipsis: true,
     },
     {
-      title: 'Long Column Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 2',
+      title: '角色',
+      dataIndex: 'role',
+      key: 'role',
       ellipsis: true,
     },
     {
-      title: 'Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 3',
-      ellipsis: true,
-    },
-    {
-      title: 'Long Column',
-      dataIndex: 'address',
-      key: 'address 4',
-      ellipsis: true,
-    },
-    {
+      title: '操作',
       dataIndex: 'Action',
       key: 'action',
     },
@@ -384,25 +452,104 @@
     isAdd.value = true;
   };
   // 修改
-  const edit = () => {
-    visible.value = true;
+  const edit = (name, id, level) => {
     isAdd.value = false;
-  };
-  // 新增子级
-  const addChild = () => {};
+    curEditTreeId.value = id;
 
-  const handleOk = () => {
-    if (firOrgName.value.length == 0) {
-      message.error('机构名称必填');
-      return;
+    // 编辑一级机构
+    if (level == 0) {
+      visible.value = true;
+      firOrgName.value = name;
     }
+
+    // 编辑二级机构
+    if (level == 1) {
+      let curFa = {};
+      for (let prop of treeData.value) {
+        if (prop.children && prop.children.length) {
+          for (let item of prop.children) {
+            if (item.id == id) {
+              curFa = prop;
+            }
+          }
+        }
+      }
+
+      firOrgNameStatic.value = curFa.name;
+      secVisible.value = true;
+      secOrgName.value = name;
+    }
+  };
+
+  function changeTreeName(nodes, id, name) {
+    for (let item of nodes) {
+      if (id == item.id) {
+        item.name = name;
+        return;
+      }
+
+      if (item.children && item.children.length) {
+        changeTreeName(item.children, id, name);
+      }
+    }
+  }
+
+  let curSelectTreeListId = ref('');
+  const selectTree = async (val, e) => {
+    curSelectTreeListId.value = e.selectedNodes[0].id;
+
+    await getUserList(curSelectTreeListId.value);
+  };
+
+  const handleOk = async () => {
+    console.log(123, formState);
+
+    let subData = {
+      meta: {},
+      profile: {
+        ...formState.value,
+      },
+      account: {
+        username: formState.value.name,
+        password: md5(123456),
+      },
+    };
+    await createUserApi(subData, curSelectTreeListId.value);
+
     visible.value = false;
   };
 
-  const del = () => {};
+  const del = async (id) => {
+    removeNodeInTree(treeData.value, id);
+
+    await uploadUserListTreeApi({
+      id: 'root',
+      meta: {},
+      name: '慢病管理系统',
+      children: treeData.value,
+    });
+
+    await getUserTreeList();
+  };
+
+  const removeNodeInTree = (treeList, id) => {
+    // 通过id从数组（树结构）中移除元素
+    if (!treeList || !treeList.length) {
+      return;
+    }
+    for (let i = 0; i < treeList.length; i++) {
+      if (treeList[i].id === id) {
+        treeList.splice(i, 1);
+        break;
+      }
+      removeNodeInTree(treeList[i].children, id);
+    }
+  };
 
   // 成员
-  const formState = ref({});
+  const formState = ref({
+    role: undefined,
+  });
   const addNewUser = () => {
     userVisible.value = true;
   };
@@ -416,9 +563,10 @@
     display: flex;
   }
   .left-wrapper {
-    width: 20%;
+    width: 350px;
     margin-right: 20px;
     background-color: #fff;
+    flex: 1;
     .title {
       display: flex;
       padding: 15px;
@@ -437,7 +585,7 @@
     }
   }
   .right-wrapper {
-    width: 80%;
+    width: calc(100% - 350px);
     height: 100%;
     background-color: #fff;
     padding: 15px;
