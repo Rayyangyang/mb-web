@@ -1,5 +1,5 @@
 <template>
-  <div class="patient-mag-wrapper my-container">
+  <div class="doc-patient-wrapper my-container">
     <div class="table-handle-wrapper">
       <div class="search-wrapper">
         <div class="mr-2">
@@ -26,49 +26,6 @@
         </template>
       </template>
     </Table>
-
-    <!-- 患者档案 -->
-    <Modal v-model:visible="visible" title="患者档案" width="800px" :footer="null">
-      <div class="user-archives-info">
-        <div class="my-title">
-          <i></i>
-          <span>预警信息</span>
-        </div>
-        <div>
-          <Descriptions>
-            <DescriptionsItem label="真实姓名">Zhou Maomao</DescriptionsItem>
-            <DescriptionsItem label="性别">1810000000</DescriptionsItem>
-            <DescriptionsItem label="现居地址">Hangzhou, Zhejiang</DescriptionsItem>
-            <DescriptionsItem label="身份证号">empty</DescriptionsItem>
-            <DescriptionsItem label="身高">12</DescriptionsItem>
-            <DescriptionsItem label="过敏史">12</DescriptionsItem>
-            <DescriptionsItem label="联系电话">12</DescriptionsItem>
-            <DescriptionsItem label="体重">12</DescriptionsItem>
-            <DescriptionsItem label="既往史">12</DescriptionsItem>
-            <DescriptionsItem label="家族病史">12</DescriptionsItem>
-            <DescriptionsItem label="就诊史">12</DescriptionsItem>
-            <DescriptionsItem label="血压标签">12</DescriptionsItem>
-            <DescriptionsItem label="心率标签">12</DescriptionsItem>
-          </Descriptions>
-        </div>
-        <div class="my-title">
-          <i></i>
-          <span>服务信息</span>
-        </div>
-        <Table :columns="columns" :data-source="data" :customRow="handleRowClick">
-          <template #bodyCell="{ column, text }">
-            <template v-if="column.key === 'action'">
-              <!-- <div>
-                  <span style="color: #29a5ff" class="mr-1">详情</span>
-                  <span style="color: #29a5ff" class="mr-1">修改</span>
-                  <span style="color: red" class="mr-1">删除</span>
-                  <span style="color: #29a5ff">重置密码</span>
-                </div> -->
-            </template>
-          </template>
-        </Table>
-      </div>
-    </Modal>
   </div>
 </template>
 
@@ -76,7 +33,6 @@
   import { ref, watch, reactive } from 'vue';
   import { Button, Modal, Input, Table, Descriptions } from 'ant-design-vue';
 
-  const DescriptionsItem = Descriptions.Item;
   const columns = [
     {
       title: 'Name',
@@ -155,7 +111,7 @@
 </script>
 
 <style scoped lang="less">
-  .patient-mag-wrapper {
+  .doc-patient-wrapper {
     padding: 20px;
     background-color: #fff;
     .table-handle-wrapper {
@@ -169,7 +125,4 @@
     }
   }
 
-  .user-archives-info {
-    padding: 20px;
-  }
 </style>

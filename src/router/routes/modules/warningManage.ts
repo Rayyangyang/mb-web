@@ -1,5 +1,5 @@
 import type { AppRouteModule } from '/@/router/types';
-
+import { RoleEnum } from '/@/enums/roleEnum';
 import { LAYOUT } from '/@/router/constant';
 
 const WarningManage: AppRouteModule = {
@@ -11,6 +11,7 @@ const WarningManage: AppRouteModule = {
     icon: 'simple-icons:about-dot-me',
     title: '预警管理',
     orderNo: 13,
+    roles: [RoleEnum.ADMIN],
   },
   children: [
     {
