@@ -3,9 +3,9 @@
     <div class="table-handle-wrapper">
       <div class="search-wrapper">
         <div class="mr-2">
-          <Input v-model:value="userName" placeholder="请输入服务包名称" size="small" />
+          <Input v-model:value="userName" placeholder="请输入服务包名称" size="middle" />
         </div>
-        <Button style="border-radius: 4px; padding: 0px 16px" type="primary" size="small"
+        <Button style="border-radius: 4px; padding: 0px 16px" type="primary" size="middle"
           >查询</Button
         >
       </div>
@@ -14,7 +14,7 @@
           @click="addNewTags"
           style="border-radius: 4px; padding: 0px 16px"
           type="primary"
-          size="small"
+          size="middle"
           >新增</Button
         >
       </div>
