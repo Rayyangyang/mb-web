@@ -44,3 +44,30 @@ export function createUserApi(params, id) {
     params,
   });
 }
+
+/**
+ * @description: 修改密码
+ */
+export function resetUserApi(params, id) {
+  return defHttp.put({
+    url: `/admin/api/v1/users/${id}/account`,
+    params,
+  });
+}
+/**
+ * @description: 删除用户
+ */
+export function delUserApi(id) {
+  return defHttp.delete({
+    url: `/admin/api/v1/users/${id}`,
+  });
+}
+/**
+ * @description: 删除用户
+ */
+export function uploadUserApi(id, params) {
+  return defHttp.patch({
+    url: `/admin/api/v1/users/${id}/profile`,
+    params,
+  });
+}

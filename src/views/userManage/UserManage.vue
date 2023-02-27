@@ -37,10 +37,14 @@
       <div class="table-handle-wrapper">
         <div class="search-wrapper">
           <div class="mr-2">
-            <Input v-model:value="userName" placeholder="请输入成员姓名" size="middle" />
+            <Input v-model:value="searchForm.userName" placeholder="请输入成员姓名" size="middle" />
           </div>
           <div class="mr-2">
-            <Input v-model:value="userName" placeholder="请输入成员联系电话" size="middle" />
+            <Input
+              v-model:value="searchForm.phone"
+              placeholder="请输入成员联系电话"
+              size="middle"
+            />
           </div>
 
           <Button style="border-radius: 4px; padding: 0px 16px" type="primary" size="middle"
@@ -58,13 +62,32 @@
         </div>
       </div>
       <Table :columns="columns" :data-source="tableData">
-        <template #bodyCell="{ column, text }">
+        <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
             <div>
-              <span style="color: #29a5ff" class="mr-1">详情</span>
-              <span style="color: #29a5ff" class="mr-1">修改</span>
-              <span style="color: red" class="mr-1">删除</span>
-              <span style="color: #29a5ff">重置密码</span>
+              <span
+                style="color: #29a5ff; cursor: pointer"
+                class="mr-1"
+                @click="showUserInfo(record, false)"
+                >详情</span
+              >
+              <span
+                style="color: #29a5ff; cursor: pointer"
+                class="mr-1"
+                @click="
+                  () => {
+                    showUserInfo(record, true);
+                    isAddNew = false;
+                  }
+                "
+                >修改</span
+              >
+              <span style="color: red; cursor: pointer" class="mr-1" @click="delUser(record)"
+                >删除</span
+              >
+              <span style="color: #29a5ff; cursor: pointer" @click="resetPwd(record)"
+                >重置密码</span
+              >
             </div>
           </template>
         </template>
@@ -117,7 +140,12 @@
     </Modal>
 
     <!-- 新增成员 -->
-    <Modal v-model:visible="userVisible" title="新增/修改/查看成员信息" width="600px">
+    <Modal
+      v-model:visible="userVisible"
+      title="新增/修改/查看成员信息"
+      width="600px"
+      @cancel="close"
+    >
       <div class="edit-userinfo-wrapper">
         <Form
           :model="formState"
@@ -125,50 +153,46 @@
           :label-col="{ span: 4 }"
           :wrapper-col="{ span: 8 }"
           autocomplete="off"
-          @finish="onFinish"
-          @finishFailed="onFinishFailed"
+          ref="formRef"
         >
-          <FormItem
-            label="姓名"
-            name="name"
-            :rules="[{ required: true, message: 'Please input your username!' }]"
-          >
-            <Input v-model:value="formState.name" />
+          <FormItem label="姓名" name="name" :rules="[{ required: true, message: '请输入姓名' }]">
+            <Input v-model:value="formState.name" :disabled="!isEdit" />
           </FormItem>
           <FormItem
             label="手机号"
             name="phone"
-            :rules="[{ required: true, message: 'Please input your username!' }]"
+            :rules="[{ required: true, message: '请输入手机号' }]"
           >
-            <Input v-model:value="formState.phone" />
+            <Input v-model:value="formState.phone" :disabled="!isEdit" />
             <p style="color: #b1b1b1">默认密码： 123456</p>
           </FormItem>
           <FormItem
             label="身份证号"
-            name="username"
-            :rules="[{ required: true, message: 'Please input your username!' }]"
+            name="sfn"
+            :rules="[{ required: true, message: '请输入身份证号' }]"
           >
-            <Input v-model:value="formState.idCard" />
+            <Input v-model:value="formState.sfn" :disabled="!isEdit" />
           </FormItem>
-          <FormItem
-            label="职务"
-            name="username"
-            :rules="[{ required: true, message: 'Please input your username!' }]"
-          >
-            <Input v-model:value="formState.job" />
+          <FormItem label="职务" name="job" :rules="[{ required: true, message: '请输入职务' }]">
+            <Input v-model:value="formState.job" :disabled="!isEdit" />
           </FormItem>
-          <FormItem label="角色" name="role">
+          <FormItem label="角色" name="role" :rules="[{ required: true, message: '请选择角色' }]">
             <Select
               v-model:value="formState.role"
               style="width: 100%"
               :options="roleList"
               placeholder="请选择角色"
+              :disabled="!isEdit"
             />
           </FormItem>
         </Form>
         <div class="remark-wrapper">
           <span>备注:</span>
-          <Textarea v-model:value="formState.remark" :auto-size="{ minRows: 2, maxRows: 5 }" />
+          <Textarea
+            v-model:value="formState.remark"
+            :disabled="!isEdit"
+            :auto-size="{ minRows: 2, maxRows: 5 }"
+          />
         </div>
         <!-- 上传 -->
         <div class="upload-wrapper">
@@ -181,8 +205,6 @@
               class="avatar-uploader"
               :show-upload-list="false"
               action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-              :before-upload="beforeUpload"
-              @change="handleChange"
             >
               <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
               <div v-else>
@@ -195,8 +217,15 @@
         </div>
       </div>
       <template #footer>
-        <Button key="back" @click="visible = false" style="border-radius: 8px">取消</Button>
-        <Button key="submit" type="primary" @click="handleOk" style="border-radius: 8px"
+        <Button key="back" @click="userVisible = false" style="border-radius: 8px" v-show="isEdit"
+          >取消</Button
+        >
+        <Button
+          key="submit"
+          type="primary"
+          @click="handleOk"
+          style="border-radius: 8px"
+          v-show="isEdit"
           >保存</Button
         >
       </template>
@@ -226,6 +255,9 @@
     uploadUserListTreeApi,
     getUserListApi,
     createUserApi,
+    resetUserApi,
+    delUserApi,
+    uploadUserApi,
   } from '/@/api/userMag/user';
   import { getRolesListApi } from '/@/api/userMag/roles';
 
@@ -243,12 +275,15 @@
     });
   });
 
+  const searchForm = ref({
+    userName: '',
+    phone: '',
+  });
   const roleList = ref([]);
   let curSelectRole = ref('');
   const tableData = ref([]);
   const getUserList = async (id) => {
     let res = await getUserListApi(id);
-    console.log(123, res);
     tableData.value = res.data.map((ele, i) => {
       return {
         ...ele.profile,
@@ -393,8 +428,8 @@
     },
     {
       title: '身份证号',
-      dataIndex: 'idCard',
-      key: 'idCard',
+      dataIndex: 'sfn',
+      key: 'sfn',
     },
     {
       title: '联系方式',
@@ -415,39 +450,17 @@
     },
   ];
 
-  const data = [
-    {
-      key: '1',
-      name: 'John Brown',
-      age: 32,
-      address: 'New York No. 1 Lake Park, New York No. 1 Lake Park',
-      tags: ['nice', 'developer'],
-    },
-    {
-      key: '2',
-      name: 'Jim Green',
-      age: 42,
-      address: 'London No. 2 Lake Park, London No. 2 Lake Park',
-      tags: ['loser'],
-    },
-    {
-      key: '3',
-      name: 'Joe Black',
-      age: 32,
-      address: 'Sidney No. 1 Lake Park, Sidney No. 1 Lake Park',
-      tags: ['cool', 'teacher'],
-    },
-  ];
-
   let visible = ref(false);
   let isAdd = ref(false);
   let firOrgName = ref('');
 
   let secVisible = ref(false);
   let userVisible = ref(false);
+  const isAddNew = ref(true);
 
   // 新增
   const addNew = () => {
+    isAddNew.value = true;
     visible.value = true;
     isAdd.value = true;
   };
@@ -494,15 +507,19 @@
     }
   }
 
-  let curSelectTreeListId = ref('');
+  let curSelectTreeListId = ref('root');
   const selectTree = async (val, e) => {
     curSelectTreeListId.value = e.selectedNodes[0].id;
-
     await getUserList(curSelectTreeListId.value);
   };
 
+  const formRef = ref();
+
   const handleOk = async () => {
-    console.log(123, formState);
+    // 校验
+    await formRef.value.validate();
+
+    // 判断是修改还是新增
 
     let subData = {
       meta: {},
@@ -510,13 +527,22 @@
         ...formState.value,
       },
       account: {
-        username: formState.value.name,
-        password: md5(123456),
+        username: formState.value.phone,
+        password: md5('123456'),
       },
     };
-    await createUserApi(subData, curSelectTreeListId.value);
+    if (isAddNew.value) {
+      // 新增
+      await createUserApi(subData, curSelectTreeListId.value);
+    } else {
+      console.log(123, subData);
+      
+      await uploadUserApi(subData.profile.user_id, formState.value);
+    }
 
-    visible.value = false;
+    await getUserList(curSelectTreeListId.value);
+
+    userVisible.value = false;
   };
 
   const del = async (id) => {
@@ -551,7 +577,41 @@
     role: undefined,
   });
   const addNewUser = () => {
+    isEdit.value = true;
     userVisible.value = true;
+  };
+
+  // table 操作
+  const fileList = ref([]);
+  let imageUrl = ref('');
+  let isEdit = ref(false);
+
+  const showUserInfo = (record, edit) => {
+    console.log(record);
+    isEdit.value = edit;
+    formState.value = record;
+    userVisible.value = true;
+  };
+
+  const close = () => {
+    formState.value = {};
+  };
+
+  const resetPwd = async (record) => {
+    await resetUserApi(
+      {
+        password: 'e10adc3949ba59abbe56e057f20f883e',
+      },
+      record.user_id,
+    );
+    message.success('重置密码成功');
+  };
+
+  const delUser = async (record) => {
+    await delUserApi(record.user_id);
+
+    await getUserList(curSelectTreeListId.value);
+    message.success('删除成功');
   };
 </script>
 

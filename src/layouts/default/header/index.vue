@@ -19,7 +19,7 @@
       <p
         v-if="getShowContent && getShowBread"
         style="color: #5dbbff; font-size: 20px; margin: 0 0 0 20px; font-weight: bold"
-        >123000</p
+        >慢病综合管理系统</p
       >
     </div>
     <!-- left end -->

@@ -1,12 +1,11 @@
 <template>
   <div class="doc-waring-wrapper my-container">
     <RadioGroup v-model:value="mode" :style="{ marginBottom: '8px' }">
-      <RadioButton value="1">血压指标</RadioButton>
-      <RadioButton value="2">心率指标</RadioButton>
+      <RadioButton value="1">主管患者</RadioButton>
+      <RadioButton value="2">值班患者</RadioButton>
     </RadioGroup>
 
-    <!-- 血压预警 -->
-    <div class="" v-show="mode == 1">
+    <div class="">
       <div class="table-handle-wrapper">
         <div class="search-wrapper">
           <div class="mr-2">
@@ -59,14 +58,6 @@
           </template>
         </template>
       </Table>
-    </div>
-
-    <!-- 心率预警 -->
-    <div v-show="mode == 2">
-      <div class="my-title">
-        <i></i>
-        <span>心率预警</span>
-      </div>
     </div>
 
     <!-- 主管患者 预警管理详情 -->
@@ -127,12 +118,22 @@
     visible.value = true;
   };
   let mode = ref('1');
+  
 </script>
 
 <style scoped lang="scss">
   .doc-waring-wrapper {
     background-color: #fff;
     padding: 20px;
+  }
+  .table-handle-wrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+    }
   }
 </style>
 

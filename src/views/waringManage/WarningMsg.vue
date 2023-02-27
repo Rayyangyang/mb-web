@@ -3,49 +3,54 @@
     <div class="table-handle-wrapper">
       <div class="search-wrapper">
         <div class="mr-2">
-          <Input v-model:value="userName" placeholder="请输入患者姓名" size="middle" />
+          <Input v-model:value="searchForm.userName" placeholder="请输入患者姓名" size="middle" />
         </div>
         <div class="mr-2">
           <Select
             ref="select"
-            v-model:value="value1"
+            v-model:value="searchForm.item"
             style="width: 180px"
-            @focus="focus"
             placeholder="请选择预警项目"
-            @change="handleChange"
             size="middle"
           >
-            <SelectOption value="jack">Jack</SelectOption>
-            <SelectOption value="lucy">Lucy</SelectOption>
-            <SelectOption value="Yiminghe">yiminghe</SelectOption>
+            <SelectOption value="B">心率</SelectOption>
+            <SelectOption value="A">血压</SelectOption>
           </Select>
         </div>
         <div class="mr-2">
           <Select
             ref="select"
-            v-model:value="value1"
+            v-model:value="searchForm.level"
             style="width: 180px"
-            @focus="focus"
             placeholder="请选择预警等级"
-            @change="handleChange"
             size="middle"
           >
-            <SelectOption value="jack">Jack</SelectOption>
-            <SelectOption value="lucy">Lucy</SelectOption>
-            <SelectOption value="Yiminghe">yiminghe</SelectOption>
+            <SelectOption value="轻度">轻度</SelectOption>
+            <SelectOption value="重度">重度</SelectOption>
+            <SelectOption value="正常">正常</SelectOption>
+            <SelectOption value="未知">未知</SelectOption>
           </Select>
         </div>
 
-        <Button style="border-radius: 4px; padding: 0px 16px" type="primary" size="middle"
+        <Button
+          style="border-radius: 4px; padding: 0px 16px"
+          type="primary"
+          size="middle"
+          @click="search"
           >查询</Button
         >
       </div>
     </div>
-    <Table :columns="columns" :data-source="data" :customRow="handleRowClick">
-      <template #bodyCell="{ column, text }">
+    <Table
+      :columns="columns"
+      :data-source="tableData"
+      :pagination="pagination"
+      @change="changePage"
+    >
+      <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'action'">
           <div>
-            <span style="color: #29a5ff; cursor: pointer" class="mr-1" @click="showInfo(column)"
+            <span style="color: #29a5ff; cursor: pointer" class="mr-1" @click="showInfo(record)"
               >详情</span
             >
           </div>
@@ -62,9 +67,13 @@
         </div>
         <div>
           <Descriptions>
-            <DescriptionsItem label="预警时间">Zhou Maomao</DescriptionsItem>
-            <DescriptionsItem label="预警项目">1810000000</DescriptionsItem>
-            <DescriptionsItem label="预警值">Hangzhou, Zhejiang</DescriptionsItem>
+            <DescriptionsItem label="预警时间">{{
+              dayjs(curInfo.create_at).format('YYYY-MM-DD')
+            }}</DescriptionsItem>
+            <DescriptionsItem label="预警项目">{{ warinType[curInfo.type] }}</DescriptionsItem>
+            <DescriptionsItem label="预警值">{{
+              curInfo.type == 'A' ? curInfo['血压'] : curInfo['心率']
+            }}</DescriptionsItem>
             <DescriptionsItem label="预警等级">empty</DescriptionsItem>
             <DescriptionsItem label="主管医生">12</DescriptionsItem>
           </Descriptions>
@@ -75,19 +84,20 @@
         </div>
         <div>
           <Descriptions>
-            <DescriptionsItem label="真实姓名">Zhou Maomao</DescriptionsItem>
-            <DescriptionsItem label="性别">1810000000</DescriptionsItem>
-            <DescriptionsItem label="现居地址">Hangzhou, Zhejiang</DescriptionsItem>
-            <DescriptionsItem label="身份证号">empty</DescriptionsItem>
-            <DescriptionsItem label="身高">12</DescriptionsItem>
-            <DescriptionsItem label="过敏史">12</DescriptionsItem>
-            <DescriptionsItem label="联系电话">12</DescriptionsItem>
-            <DescriptionsItem label="体重">12</DescriptionsItem>
-            <DescriptionsItem label="既往史">12</DescriptionsItem>
-            <DescriptionsItem label="家族病史">12</DescriptionsItem>
-            <DescriptionsItem label="就诊史">12</DescriptionsItem>
-            <DescriptionsItem label="血压标签">12</DescriptionsItem>
-            <DescriptionsItem label="心率标签">12</DescriptionsItem>
+            <DescriptionsItem label="真实姓名">{{ curInfo['真实姓名'] }}</DescriptionsItem>
+            <DescriptionsItem label="性别">{{ curInfo['性别'] }}</DescriptionsItem>
+            <DescriptionsItem label="现居地址">{{ curInfo['现居地址'] }}</DescriptionsItem>
+            <DescriptionsItem label="身份证号">{{ curInfo['身份证号'] }}</DescriptionsItem>
+            <DescriptionsItem label="身高">{{ curInfo['身高'] }}</DescriptionsItem>
+            <DescriptionsItem label="过敏史">{{ curInfo['过敏史'] }}</DescriptionsItem>
+            <DescriptionsItem label="联系电话">{{ curInfo['联系电话'] }}</DescriptionsItem>
+            <DescriptionsItem label="体重">{{ curInfo['体重'] }}</DescriptionsItem>
+            <DescriptionsItem label="既往史">{{ curInfo['既往史'] }}</DescriptionsItem>
+            <DescriptionsItem label="联系人">{{ curInfo['联系人'] }}</DescriptionsItem>
+            <DescriptionsItem label="血压标签">{{ curInfo['血压标签'] }}</DescriptionsItem>
+            <DescriptionsItem label="家族病史">{{ curInfo['家族病史'] }}</DescriptionsItem>
+            <DescriptionsItem label="就诊史">{{ curInfo['就诊史'] }}</DescriptionsItem>
+            <DescriptionsItem label="心率标签">{{ curInfo['心率标签'] }}</DescriptionsItem>
           </Descriptions>
         </div>
       </div>
@@ -96,45 +106,94 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, reactive } from 'vue';
+  import { ref, watch, reactive, onMounted } from 'vue';
   import { Button, Modal, Input, Table, Descriptions, Select } from 'ant-design-vue';
+  import { getWraningListApi } from '/@/api/warning/warning';
+  import getAge from '/@/utils/getAgeWidthIdCard';
+  import dayjs from 'dayjs';
 
+  const searchForm = ref({
+    item: undefined,
+    level: undefined,
+    userName: '',
+  });
   const SelectOption = Select.Option;
   const DescriptionsItem = Descriptions.Item;
   const columns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: '序号',
+      dataIndex: 'order',
+      key: 'order',
     },
     {
-      title: 'Age',
+      title: '成员姓名',
+      dataIndex: '真实姓名',
+      key: '真实姓名',
+    },
+    {
+      title: '联系方式',
+      dataIndex: '联系电话',
+      key: '联系电话',
+      ellipsis: true,
+    },
+    {
+      title: '性别',
+      dataIndex: '性别',
+      key: '性别',
+      ellipsis: true,
+    },
+    {
+      title: '年龄',
       dataIndex: 'age',
       key: 'age',
-      width: 80,
-    },
-    {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address 1',
       ellipsis: true,
     },
     {
-      title: 'Long Column Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 2',
+      title: '居住地',
+      dataIndex: '现居地址',
+      key: '现居地址',
+      ellipsis: true,
+    },
+    // {
+    //   title: '主治医生',
+    //   dataIndex: '主治医生',
+    //   key: '主治医生',
+    //   ellipsis: true,
+    // },
+    // {
+    //   title: '值班医生',
+    //   dataIndex: '值班医生',
+    //   key: '值班医生',
+    //   ellipsis: true,
+    // },
+    {
+      title: '预警项目',
+      dataIndex: 'warnItem',
+      key: 'warnItem',
       ellipsis: true,
     },
     {
-      title: 'Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 3',
+      title: '预警值',
+      dataIndex: 'warnNum',
+      key: 'warnNum',
       ellipsis: true,
     },
     {
-      title: 'Long Column',
-      dataIndex: 'address',
-      key: 'address 4',
+      title: '预警级别',
+      dataIndex: '严重程度',
+      key: '严重程度',
+      ellipsis: true,
+    },
+    {
+      title: '监测时间',
+      dataIndex: 'time',
+      key: 'time',
+      ellipsis: true,
+    },
+    {
+      title: '客服状态',
+      dataIndex: 'status',
+      key: 'status',
       ellipsis: true,
     },
     {
@@ -169,9 +228,86 @@
     },
   ];
 
+  const warinType = {
+    A: '血压',
+    B: '心率',
+  };
+
+  let searchString = {
+    field: '',
+    op: 'like',
+    value: '',
+    dt: 'varchar',
+  };
+
+  const search = async () => {
+    searchStr.value = '';
+    searchParams.value.pno = 0;
+
+    if (searchForm.value.userName != '') {
+      searchStr.value += `&field=真实姓名&op=like&dt=varchar&value=%25${searchForm.value.userName}%25`;
+    }
+    if (searchForm.value.item != undefined) {
+      searchStr.value += `&field=type&op=like&dt=varchar&value=%25${searchForm.value.item}%25`;
+    }
+    if (searchForm.value.level != undefined) {
+      searchStr.value += `&field=严重程度&op=like&dt=varchar&value=%25${searchForm.value.level}%25`;
+    }
+
+    await getWraningList();
+  };
+
+  const tableData = ref([]);
+
+  let searchParams = ref({
+    pno: 0,
+    psize: 10,
+  });
+
+  let searchStr = ref('');
+
+  let pagination = ref({
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  });
+
+  const changePage = async (val) => {
+    console.log(val);
+    pagination.value = val;
+    searchParams.value.pno = val.current - 1;
+    searchParams.value.psize = val.pageSize;
+    await getWraningList();
+  };
+
+  const getWraningList = async () => {
+    let res = await getWraningListApi(searchParams.value, searchStr.value);
+    console.log(123, res);
+    pagination.value.total = res.headers.count;
+    tableData.value = res.data.map((ele, i) => {
+      return {
+        ...ele,
+        ...ele.meta,
+        age: getAge(ele.meta['身份证号']),
+        warnItem: warinType[ele.meta.type],
+        order: i + 1,
+        warnNum: ele.meta.type == 'A' ? ele.meta['血压'] : ele.meta['心率'],
+        time: dayjs(ele.create_at).format('YYYY-MM-DD'),
+      };
+    });
+    console.log(123, tableData.value);
+  };
+
+  onMounted(async () => {
+    await getWraningList();
+  });
+
   let visible = ref(false);
 
+  let curInfo = ref({});
   const showInfo = (row) => {
+    console.log(123, row);
+    curInfo.value = row;
     visible.value = true;
   };
 </script>

@@ -17,13 +17,35 @@ const PatientMag: AppRouteModule = {
   children: [
     {
       path: 'index',
-      name: 'patientMagPage',
+      name: 'PatientMagPage',
       component: () => import('/@/views/docPatientMag/index.vue'),
       meta: {
         title: '患者管理',
         hideMenu: true,
         icon: 'simple-icons:about-dot-me',
       },
+      children: [
+        {
+          path: 'patientInfo',
+          name: 'PatientInfo',
+          component: () => import('/@/views/docPatientMag/components/PatientInfo.vue'),
+          meta: {
+            title: '患者档案',
+            hideMenu: true,
+            icon: 'simple-icons:about-dot-me',
+          },
+        },
+        {
+          path: 'dailyMonitoring',
+          name: 'DailyMonitoring',
+          component: () => import('/@/views/docPatientMag/components/DailyMonitoring.vue'),
+          meta: {
+            title: '日常监测',
+            hideMenu: true,
+            icon: 'simple-icons:about-dot-me',
+          },
+        },
+      ],
     },
   ],
 };

@@ -13,3 +13,22 @@ export function getServiceListApi() {
   });
 }
 
+/**
+ * @description: 启用 sevicepackage
+ */
+export function setServiceEnabledApi(id, params) {
+  return defHttp.patch({
+    url: `/admin/api/v1/service-packs/${id}`,
+    params,
+  });
+}
+
+/**
+ * @description: 创建 服务包
+ */
+export function createServicePackApi(params) {
+  return defHttp.post({
+    url: `/admin/api/v1/service-packs/`,
+    params,
+  });
+}

@@ -30,8 +30,27 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, reactive } from 'vue';
+  import { ref, watch, reactive, onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
   import { Button, Modal, Input, Table, Descriptions } from 'ant-design-vue';
+  import { getPatientListApi } from '/@/api/docPatient/docPatient';
+  const router = useRouter();
+
+  onMounted(async () => {
+    let res = await getPatientList();
+  });
+
+  const getPatientList = async () => {
+    let res = await getPatientListApi();
+
+    data.value = res.data.map((ele, i) => {
+      return {
+        order: i + 1,
+        ...ele.health_doc,
+        
+      };
+    });
+  };
 
   const columns = [
     {
@@ -105,6 +124,7 @@
     return {
       onClick: () => {
         visible.value = true;
+        router.push('/patientMag/index/patientInfo');
       },
     };
   };
@@ -124,5 +144,4 @@
       }
     }
   }
-
 </style>
