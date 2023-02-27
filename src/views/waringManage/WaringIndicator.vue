@@ -24,10 +24,22 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { Radio } from 'ant-design-vue';
+  import {getWraningTargetApi} from '/@/api/warning/warning'
   const RadioGroup = Radio.Group;
   const RadioButton = Radio.Button;
+
+
+
+  onMounted(async()=>{
+    await getWraningTarget()
+  })
+
+  const getWraningTarget = async()=>{
+    let res = await getWraningTargetApi()
+    
+  }
 
   let mode = ref('1');
 </script>

@@ -12,3 +12,12 @@ export function getWraningListApi(query, searchStr) {
     url: `/admin/api/v1/warnings/?pno=${query.pno}&psize=${query.psize}${searchStr}`,
   });
 }
+
+/**
+ * @description: 预警指标
+ */
+export function getWraningTargetApi() {
+  return defHttp.get({
+    url: `/admin/api/v1/sys-configs/?c=warning_values2`,
+  });
+}
