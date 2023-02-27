@@ -9,11 +9,11 @@ export function configCompressPlugin(
   compress: 'gzip' | 'brotli' | 'none',
   deleteOriginFile = false,
 ): PluginOption | PluginOption[] {
-  const compressList = compress.split(',');
+  const compressList = compress?.split(',');
 
   const plugins: PluginOption[] = [];
 
-  if (compressList.includes('gzip')) {
+  if (compressList?.includes('gzip')) {
     plugins.push(
       compressPlugin({
         ext: '.gz',
@@ -22,7 +22,7 @@ export function configCompressPlugin(
     );
   }
 
-  if (compressList.includes('brotli')) {
+  if (compressList?.includes('brotli')) {
     plugins.push(
       compressPlugin({
         ext: '.br',

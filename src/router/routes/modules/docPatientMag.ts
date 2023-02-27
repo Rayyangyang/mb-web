@@ -35,16 +35,16 @@ const PatientMag: AppRouteModule = {
             icon: 'simple-icons:about-dot-me',
           },
         },
-        {
-          path: 'dailyMonitoring',
-          name: 'DailyMonitoring',
-          component: () => import('/@/views/docPatientMag/components/DailyMonitoring.vue'),
-          meta: {
-            title: '日常监测',
-            hideMenu: true,
-            icon: 'simple-icons:about-dot-me',
-          },
-        },
+        // {
+        //   path: 'dailyMonitoring',
+        //   name: 'DailyMonitoring',
+        //   component: () => import('/@/views/docPatientMag/components/DailyMonitoring.vue'),
+        //   meta: {
+        //     title: '日常监测',
+        //     hideMenu: true,
+        //     icon: 'simple-icons:about-dot-me',
+        //   },
+        // },
       ],
     },
   ],

@@ -15,14 +15,41 @@
       </div>
     </div>
     <Table :columns="columns" :data-source="data" :customRow="handleRowClick">
-      <template #bodyCell="{ column, text }">
-        <template v-if="column.key === 'action'">
-          <!-- <div>
-            <span style="color: #29a5ff" class="mr-1">详情</span>
-            <span style="color: #29a5ff" class="mr-1">修改</span>
-            <span style="color: red" class="mr-1">删除</span>
-            <span style="color: #29a5ff">重置密码</span>
-          </div> -->
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === '真实姓名'">
+          <div>
+            <span @click="toInfo(record)">{{ record['真实姓名'] }}</span>
+          </div>
+        </template>
+        <template v-if="column.key === 'bloodTag'">
+          <div>
+            <Select
+              ref="select"
+              v-model:value="record.bloodTag"
+              style="width: 120px"
+              @change="changeBloodTag"
+            >
+              <SelectOption value="轻度">轻度</SelectOption>
+              <SelectOption value="重度">重度</SelectOption>
+              <SelectOption value="正常">正常</SelectOption>
+              <SelectOption value="未知">未知</SelectOption>
+            </Select>
+          </div>
+        </template>
+        <template v-if="column.key === 'heartTag'">
+          <div>
+            <Select
+              ref="select"
+              v-model:value="record.bloodTag"
+              style="width: 120px"
+              @change="changeHeartTag"
+            >
+              <SelectOption value="轻度">轻度</SelectOption>
+              <SelectOption value="重度">重度</SelectOption>
+              <SelectOption value="正常">正常</SelectOption>
+              <SelectOption value="未知">未知</SelectOption>
+            </Select>
+          </div>
         </template>
       </template>
     </Table>
@@ -32,10 +59,15 @@
 <script setup lang="ts">
   import { ref, watch, reactive, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import { Button, Modal, Input, Table, Descriptions } from 'ant-design-vue';
+  import { Button, Modal, Input, Table, Select } from 'ant-design-vue';
   import { getPatientListApi } from '/@/api/docPatient/docPatient';
-  const router = useRouter();
+  import getAge from '/@/utils/getAgeWidthIdCard';
+  import { usePatientInfoStore } from '/@/store/modules/patientInfo';
 
+  const patientInfo = usePatientInfoStore();
+  const SelectOption = Select.Option;
+  const router = useRouter();
+  const data = ref([]);
   onMounted(async () => {
     let res = await getPatientList();
   });
@@ -47,87 +79,83 @@
       return {
         order: i + 1,
         ...ele.health_doc,
-        
+        age: getAge(ele.health_doc['身份证号']),
       };
     });
   };
 
   const columns = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: '序号',
+      dataIndex: 'order',
+      key: 'order',
     },
     {
-      title: 'Age',
+      title: '成员姓名',
+      dataIndex: '真实姓名',
+      key: '真实姓名',
+    },
+    {
+      title: '联系方式',
+      dataIndex: '联系电话',
+      key: '联系电话',
+      ellipsis: true,
+    },
+    {
+      title: '性别',
+      dataIndex: '性别',
+      key: '性别',
+      ellipsis: true,
+    },
+    {
+      title: '年龄',
       dataIndex: 'age',
       key: 'age',
-      width: 80,
     },
     {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address 1',
+      title: '居住地址',
+      dataIndex: '现居地址',
+      key: '现居地址',
       ellipsis: true,
     },
     {
-      title: 'Long Column Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 2',
+      title: '建档时间',
+      dataIndex: '',
+      key: '',
       ellipsis: true,
     },
     {
-      title: 'Long Column Long Column',
-      dataIndex: 'address',
-      key: 'address 3',
+      title: '血压标签',
+      dataIndex: 'bloodTag',
+      key: 'bloodTag',
       ellipsis: true,
     },
     {
-      title: 'Long Column',
-      dataIndex: 'address',
-      key: 'address 4',
+      title: '心率标签',
+      dataIndex: 'heartTag',
+      key: 'heartTag',
       ellipsis: true,
     },
     {
-      dataIndex: 'Action',
-      key: 'action',
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
     },
   ];
 
-  const data = [
-    {
-      key: '1',
-      name: 'John Brown',
-      age: 32,
-      address: 'New York No. 1 Lake Park, New York No. 1 Lake Park',
-      tags: ['nice', 'developer'],
-    },
-    {
-      key: '2',
-      name: 'Jim Green',
-      age: 42,
-      address: 'London No. 2 Lake Park, London No. 2 Lake Park',
-      tags: ['loser'],
-    },
-    {
-      key: '3',
-      name: 'Joe Black',
-      age: 32,
-      address: 'Sidney No. 1 Lake Park, Sidney No. 1 Lake Park',
-      tags: ['cool', 'teacher'],
-    },
-  ];
+  const toInfo = (val) => {
+    patientInfo.setPatientInfo(val)
 
-  let visible = ref(false);
-
+    router.push('/patientMag/index/patientInfo');
+  };
   const handleRowClick = (record, index) => {
     return {
-      onClick: () => {
-        visible.value = true;
-        router.push('/patientMag/index/patientInfo');
-      },
+      onClick: (e) => {},
     };
   };
+
+  const changeBloodTag = () => {};
+  const changeHeartTag = () => {};
 </script>
 
 <style scoped lang="less">

@@ -20,7 +20,6 @@
                   border-top-left-radius: 10px;
                 "
               >
-                <img src="../../../assets/images/u6.png" alt="" />
               </div>
               <div style="padding: 20px">
                 <LoginForm />
