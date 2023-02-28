@@ -18,6 +18,6 @@ export function getWraningListApi(query, searchStr) {
  */
 export function getWraningTargetApi() {
   return defHttp.get({
-    url: `/admin/api/v1/sys-configs/?c=warning_values2`,
+    url: `/api/v1/sys-configs?c=warning_values2`,
   });
 }
